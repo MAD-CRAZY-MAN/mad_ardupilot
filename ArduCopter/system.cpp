@@ -28,7 +28,7 @@ void Copter::init_ardupilot()
                         "\n\nFree RAM: %u\n",
                         AP::fwversion().fw_string,
                         (unsigned)hal.util->available_memory());
-
+    
     //
     // Report firmware version code expect on console (check of actual EEPROM format version is done in load_parameters function)
     //
@@ -259,7 +259,6 @@ void Copter::init_ardupilot()
 
     // flag that initialisation has completed
     ap.initialised = true;
-
 #if AP_PARAM_KEY_DUMP
     AP_Param::show_all(hal.console, true);
 #endif

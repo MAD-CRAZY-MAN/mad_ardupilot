@@ -218,7 +218,6 @@ void Copter::setup()
 
     // setup storage layout for copter
     StorageManager::set_layout_copter();
-
     init_ardupilot();
 
     // initialise the main loop scheduler
@@ -237,7 +236,7 @@ void Copter::fast_loop()
 {
     // update INS immediately to get current gyro data populated
     ins.update();
-
+    hal.uartA->printf("%d", STM32_TIMCLK1); //nsh
     // run low level rate controllers that only require IMU data
     attitude_control->rate_controller_run();
 

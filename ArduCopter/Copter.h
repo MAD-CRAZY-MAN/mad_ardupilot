@@ -26,7 +26,7 @@
 #include <stdarg.h>
 
 #include <AP_HAL/AP_HAL.h>
-
+#include "hal.h" // nsh
 // Common dependencies
 #include <AP_Common/AP_Common.h>
 #include <AP_Common/Location.h>
@@ -67,6 +67,7 @@
 #include <AP_TempCalibration/AP_TempCalibration.h>
 #include <AC_AutoTune/AC_AutoTune.h>
 #include <AP_Common/AP_FWVersion.h>
+#include <AP_SysClock/AP_SysClock.h>
 
 // Configuration
 #include "defines.h"

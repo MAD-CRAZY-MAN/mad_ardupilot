@@ -15,8 +15,8 @@
  * Code by Andrew Tridgell and Siddharth Bharat Purohit
  */
 #include <AP_HAL/AP_HAL.h>
+#include <AP_SysClock/AP_SysClock.h> //nsh
 #if CONFIG_HAL_BOARD == HAL_BOARD_CHIBIOS
-
 #include <assert.h>
 
 #include "HAL_ChibiOS_Class.h"
@@ -247,7 +247,8 @@ static void main_loop()
       switch to high priority for main loop
      */
     chThdSetPriority(APM_MAIN_PRIORITY);
-
+    timer_init();
+    timer_start();
     while (true) {
         g_callbacks->loop();
 
