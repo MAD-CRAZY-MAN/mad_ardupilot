@@ -236,7 +236,8 @@ void Copter::fast_loop()
 {
     // update INS immediately to get current gyro data populated
     ins.update();
-    hal.uartA->printf("%d", STM32_TIMCLK1); //nsh
+    hal.uartA->printf("%d", STM32_TIMCLK1); //nsh debug
+    hal.uartD->printf("sended by pixhawk"); //nsh console
     // run low level rate controllers that only require IMU data
     attitude_control->rate_controller_run();
 
