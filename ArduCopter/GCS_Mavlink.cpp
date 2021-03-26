@@ -887,10 +887,27 @@ void GCS_MAVLINK_Copter::handle_mount_message(const mavlink_message_t &msg)
 
 void GCS_MAVLINK_Copter::handleMessage(const mavlink_message_t &msg)
 {
+    uint32_t now = AP_HAL::millis();
+    if(now - last_periodic_10hz >100){  //10z
+        if(follower_mode){
+            send_global_position_int(); 
+        }
+        last_periodic_10hz = now;
+    }
+
     switch (msg.msgid) {
 
     case MAVLINK_MSG_ID_HEARTBEAT:      // MAV ID: 0
     {
+        mavlink_heartbeat_t packet;
+        mavlink_msg_heartbeat_decode(&msg, &packet);
+
+        if(packet.custom_mode == 23){
+            follower_mode = 1;
+        }
+        else 
+            follower_mode = 0;
+
         // We keep track of the last time we received a heartbeat from our GCS for failsafe purposes
         if(msg.sysid != copter.g.sysid_my_gcs) break;
         copter.failsafe.last_heartbeat_ms = AP_HAL::millis();

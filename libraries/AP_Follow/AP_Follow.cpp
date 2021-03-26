@@ -253,6 +253,7 @@ bool AP_Follow::get_target_heading_deg(float &heading) const
 // handle mavlink DISTANCE_SENSOR messages
 void AP_Follow::handle_msg(const mavlink_message_t &msg)
 {
+    hal.uartA->printf("enter handle msg\r\n");
     // exit immediately if not enabled
     if (!_enabled) {
         return;
@@ -276,7 +277,7 @@ void AP_Follow::handle_msg(const mavlink_message_t &msg)
 
     // decode global-position-int message
     if (msg.msgid == MAVLINK_MSG_ID_GLOBAL_POSITION_INT) {
-
+        hal.uartA->printf("recieve gps data\r\n");
         // get estimated location and velocity (for logging)
         Location loc_estimate{};
         Vector3f vel_estimate;
