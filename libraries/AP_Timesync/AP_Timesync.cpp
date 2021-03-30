@@ -1,5 +1,4 @@
 #include <AP_Timesync/AP_Timesync.h>
-#include <GCS_MAVLink/GCS.h>
 
 AP_Timesync::AP_Timesync()
 {

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <AP_Timesync/AP_Timesync.h>
 #include <GCS_MAVLink/GCS.h>
 
 #define PTP_SYNC 0x00
