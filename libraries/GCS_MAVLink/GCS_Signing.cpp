@@ -173,7 +173,7 @@ void GCS_MAVLINK::update_signing_timestamp(uint64_t timestamp_usec)
 {
     uint64_t signing_timestamp = (timestamp_usec / (1000*1000ULL));
     // this is the offset from 1/1/1970 to 1/1/2015
-    const uint64_t epoch_offset = 1420070400;
+    const uint64_t epoch_offset = 1420070400; //second
     if (signing_timestamp > epoch_offset) {
         signing_timestamp -= epoch_offset;
     }
