@@ -20,11 +20,7 @@ class AP_Timesync
         void handle_delay_response(mavlink_ptp_timesync_t &packet);        
 
     private:
-        struct timestamp{
-
-        };
-
-        static struct timestamp t1, t2, t3, t4;
+        static struct timespec t1, t2, t3, t4;
         static AP_Timesync *_singleton;
 };
 
