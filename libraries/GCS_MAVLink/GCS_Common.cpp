@@ -38,6 +38,7 @@
 #include <AP_VisualOdom/AP_VisualOdom.h>
 #include <AP_OpticalFlow/OpticalFlow.h>
 #include <AP_Baro/AP_Baro.h>
+#include <AP_Timesync/AP_Timesync.h>
 
 #include <stdio.h>
 
@@ -2612,7 +2613,32 @@ uint64_t GCS_MAVLINK::timesync_timestamp_ns() const
     // responses to our own timesync request messages
     return AP_HAL::micros64()*1000LL + mavlink_system.sysid;
 }
+void GCS_MAVLINK::handle_ptp_timesync(const mavlink_message_t &msg)
+{
+    mavlink_ptp_timesync_t packet;
+    mavlink_msg_ptp_timesync_decode(&msg, &packet);
 
+    static uint8_t msg_type = PTP_DEFAULT_STATE;
+    
+    msg_type = packet.msg_type;
+
+    switch(msg_type){
+        case PTP_SYNC: {
+            AP::ptp().handle_sync(packet);
+            break;
+        }
+        case PTP_FOLLOW_UP: {
+            AP::ptp().handle_follow_up(packet);
+            break;
+        }
+        case PTP_DELAY_REQUSET: {
+            AP::ptp().handle_delay_response(packet);
+            break;
+        }
+        default:
+            break;
+    }
+}
 /*
   return a timesync request
   Sends back ts1 as received, and tc1 is the local timestamp in usec
@@ -3075,6 +3101,9 @@ void GCS_MAVLINK::handle_common_message(const mavlink_message_t &msg)
         break;
     case MAVLINK_MSG_ID_TIMESYNC:
         handle_timesync(msg);
+        break;
+    case MAVLINK_MSG_ID_PTP_TIMESYNC:
+        handle_ptp_timesync(msg);
         break;
     case MAVLINK_MSG_ID_LOG_REQUEST_LIST:
     case MAVLINK_MSG_ID_LOG_REQUEST_DATA:

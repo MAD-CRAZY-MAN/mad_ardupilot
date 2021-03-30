@@ -34,6 +34,7 @@
 #include <StorageManager/StorageManager.h>
 
 // Application dependencies
+#include <AP_Timesync/AP_Timesync.h>
 #include <GCS_MAVLink/GCS.h>
 #include <AP_Logger/AP_Logger.h>          // ArduPilot Mega Flash Memory Library
 #include <AP_Math/AP_Math.h>            // ArduPilot Mega Vector/Matrix math Library
@@ -266,6 +267,8 @@ private:
     RC_Channel *channel_yaw;
 
     AP_Logger logger;
+
+    AP_Timesync timesync;
 
     // flight modes convenience array
     AP_Int8 *flight_modes;
