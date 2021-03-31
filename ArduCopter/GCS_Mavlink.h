@@ -45,7 +45,8 @@ protected:
     bool allow_disarm() const override;
 
 private:
-
+    uint32_t last_periodic_10hz;
+    bool follower_mode = 0; //if the mode of follower vehicle`s is follow, the value is 1;
     void handleMessage(const mavlink_message_t &msg) override;
     void handle_command_ack(const mavlink_message_t &msg) override;
     bool handle_guided_request(AP_Mission::Mission_Command &cmd) override;
