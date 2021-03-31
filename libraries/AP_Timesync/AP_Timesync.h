@@ -8,6 +8,11 @@
 #define PTP_DELAY_RESPONSE 0x09
 #define PTP_DEFAULT_STATE 255
 
+struct timespec {
+	        uint32_t	tv_sec;		/* seconds */
+        	uint32_t	tv_nsec;	/* and nanoseconds */
+        };
+
 class AP_Timesync
 {
     public:
@@ -20,10 +25,6 @@ class AP_Timesync
         void handle_delay_response(mavlink_ptp_timesync_t &packet);        
 
     private:
-        struct timespec {
-	        uint32_t	tv_sec;		/* seconds */
-        	uint32_t	tv_nsec;	/* and nanoseconds */
-        };
         static struct timespec t1, t2, t3, t4;
         static AP_Timesync *_singleton;
 };

@@ -1,6 +1,13 @@
 #include <AP_Timesync/AP_Timesync.h>
 extern const AP_HAL::HAL& hal;
 
+timespec AP_Timesync::t1;
+timespec AP_Timesync::t2;
+timespec AP_Timesync::t3;
+timespec AP_Timesync::t4;
+
+AP_Timesync *AP_Timesync::_singleton;
+
 AP_Timesync::AP_Timesync()
 {
     if(_singleton != nullptr){
@@ -29,11 +36,6 @@ void AP_Timesync::handle_delay_response(mavlink_ptp_timesync_t &packet)
 {
     hal.uartA->printf("recieved delay response\r\n");
 }
-
-
-
-
-AP_Timesync *AP_Timesync::_singleton;
 
 namespace AP {
 AP_Timesync &ptp()
