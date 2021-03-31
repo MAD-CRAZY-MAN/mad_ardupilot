@@ -56,8 +56,6 @@ void AP_Timesync::handle_follow_up(GCS_MAVLINK &link, mavlink_ptp_timesync_t &pa
  
     t1.tv_sec = packet.time_sec;
     t1.tv_nsec = packet.time_nsec;
-    //delay_request.time_sec = //get time sec
-    //delay_request.time_nsec = //get time nsec
 
     //t3.tv_sec = get time sec;
     //t3.tv_nsec = get time nsec
@@ -66,11 +64,9 @@ void AP_Timesync::handle_follow_up(GCS_MAVLINK &link, mavlink_ptp_timesync_t &pa
     
     delay_request.msg_type = PTP_DELAY_REQUEST;
     delay_request.seq = 2;
-    //delay_request.time_sec = t3.tv_sec;
-    //delay_request.time_nsec = t3.tv_nsec;
+    delay_request.time_sec = t3.tv_sec;
+    delay_request.time_nsec = t3.tv_nsec;
 
-    delay_request.time_sec = t1.tv_sec;
-    delay_request.time_nsec = t1.tv_nsec;
     mavlink_msg_ptp_timesync_send(
         _request_sending_link->get_chan(),
         delay_request.msg_type,
@@ -84,6 +80,9 @@ void AP_Timesync::handle_follow_up(GCS_MAVLINK &link, mavlink_ptp_timesync_t &pa
 
 void AP_Timesync::handle_delay_response(mavlink_ptp_timesync_t &packet)
 {
+    t4.tv_sec = packet.time_sec;
+    t4.tv_nsec = packet.time_nsec;
+    
     hal.uartA->printf("recieved delay response\r\n");
 }
 
