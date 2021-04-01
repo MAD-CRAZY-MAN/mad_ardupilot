@@ -7,6 +7,7 @@
 #define PTP_FOLLOW_UP 0x08
 #define PTP_DELAY_REQUEST 0x01
 #define PTP_DELAY_RESPONSE 0x09
+#define TAKEOFF_TIME 0x03
 #define PTP_DEFAULT_STATE 255
 
 struct timespec {
