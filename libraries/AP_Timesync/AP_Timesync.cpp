@@ -20,11 +20,8 @@ AP_Timesync::AP_Timesync()
     _singleton = this;
 }
 
-void AP_Timesync::handle_ptp_timesync(GCS_MAVLINK &link, const mavlink_message_t &msg)
+void AP_Timesync::handle_ptp_timesync(GCS_MAVLINK &link, mavlink_ptp_timesync_t &packet)
 {
-    mavlink_ptp_timesync_t packet;
-    mavlink_msg_ptp_timesync_decode(&msg, &packet);
-
     static uint8_t msg_type = PTP_DEFAULT_STATE;
     
     msg_type = packet.msg_type;
@@ -63,18 +60,21 @@ void AP_Timesync::handle_follow_up(GCS_MAVLINK &link, mavlink_ptp_timesync_t &pa
     mavlink_ptp_timesync_t delay_request;
     
     delay_request.msg_type = PTP_DELAY_REQUEST;
-    delay_request.seq = 2;
+    delay_request.target_system = 255;
     get_time(&t3);
     delay_request.time_sec = t3.time_sec;
     delay_request.time_nsec = t3.time_nsec;
+    delay_request.takeoff_t = 9999; //ignore packet
 
     mavlink_msg_ptp_timesync_send(
         _request_sending_link->get_chan(),
         delay_request.msg_type,
-        delay_request.seq,
+        delay_request.target_system,
         delay_request.time_sec,
-        delay_request.time_nsec
-        );
+        delay_request.time_nsec,
+        delay_request.takeoff_t
+    );
+
     hal.uartA->printf("recieved follow up\r\n");
 }
 
@@ -104,6 +104,7 @@ void AP_Timesync::handle_delay_response(mavlink_ptp_timesync_t &packet)
 
     time_offset.time_sec = tmp.time_sec/2;
     time_offset.time_nsec = tmp.time_nsec/2;
+
     if(tmp.time_sec % 2 == 1)
     {
         if((long)tmp.time_sec > 0){
@@ -113,6 +114,8 @@ void AP_Timesync::handle_delay_response(mavlink_ptp_timesync_t &packet)
             time_offset.time_nsec = (long)tmp.time_nsec/2 - 500000000;
         }
     }
+    hal.uartA->printf("time offset: %ld.%ld\r\n", time_offset.time_sec, time_offset.time_nsec);
+
     //sync time = current time - offset
     get_time(&tmp_l);
     time_sub(&tmp, &tmp_l, &time_offset);
@@ -179,7 +182,7 @@ void AP_Timesync::time_sub(struct timespec *output, const struct timespec *left,
     long sec = left->time_sec - right->time_sec;
     long nsec = left->time_nsec - right->time_nsec;
 
-    if((long)left->time_sec >= 0 && (long)left->time_nsec>=0)
+    if(left->time_sec >= 0 && left->time_nsec>=0)
     {
         if((sec < 0 && nsec > 0) || (sec > 0 && nsec >= AP_NSEC_PER_SEC))
         {

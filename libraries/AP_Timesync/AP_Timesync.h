@@ -22,7 +22,7 @@ class AP_Timesync
         static AP_Timesync *get_singleton() {
             return _singleton;
         }
-        void handle_ptp_timesync(GCS_MAVLINK &link, const mavlink_message_t &msg);
+        void handle_ptp_timesync(GCS_MAVLINK &link, mavlink_ptp_timesync_t &packet);
         void handle_sync(mavlink_ptp_timesync_t &packet);
         void handle_follow_up(class GCS_MAVLINK &, mavlink_ptp_timesync_t &packet);
         void handle_delay_response(mavlink_ptp_timesync_t &packet);        

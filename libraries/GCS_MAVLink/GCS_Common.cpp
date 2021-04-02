@@ -38,7 +38,6 @@
 #include <AP_VisualOdom/AP_VisualOdom.h>
 #include <AP_OpticalFlow/OpticalFlow.h>
 #include <AP_Baro/AP_Baro.h>
-#include <AP_Timesync/AP_Timesync.h>
 
 #include <stdio.h>
 
@@ -3076,9 +3075,6 @@ void GCS_MAVLINK::handle_common_message(const mavlink_message_t &msg)
         break;
     case MAVLINK_MSG_ID_TIMESYNC:
         handle_timesync(msg);
-        break;
-    case MAVLINK_MSG_ID_PTP_TIMESYNC:
-        AP::ptp().handle_ptp_timesync(*this, msg);
         break;
     case MAVLINK_MSG_ID_LOG_REQUEST_LIST:
     case MAVLINK_MSG_ID_LOG_REQUEST_DATA:

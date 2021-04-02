@@ -913,7 +913,15 @@ void GCS_MAVLINK_Copter::handleMessage(const mavlink_message_t &msg)
         copter.failsafe.last_heartbeat_ms = AP_HAL::millis();
         break;
     }
+    case MAVLINK_MSG_ID_PTP_TIMESYNC:
+    {
+        mavlink_ptp_timesync_t packet;
+        mavlink_msg_ptp_timesync_decode(&msg, &packet);
 
+        if(copter.g.sysid_this_mav == packet.target_system)
+            AP::ptp().handle_ptp_timesync(*this, packet);
+        break;   
+    }
     case MAVLINK_MSG_ID_MANUAL_CONTROL:
     {
         if (msg.sysid != copter.g.sysid_my_gcs) {
