@@ -387,6 +387,10 @@ void Copter::ten_hz_logging_loop()
 // twentyfive_hz_logging - should be run at 25hz
 void Copter::twentyfive_hz_logging()
 {
+    timespec get;
+    AP::ptp().get_time(&get);
+    if(get.time_sec%10 == 0)
+        AP_Notify::flags.sec_10 = true;
 #if HIL_MODE != HIL_MODE_DISABLED
     // HIL for a copter needs very fast update of the servo values
     gcs().send_message(MSG_SERVO_OUTPUT_RAW);
