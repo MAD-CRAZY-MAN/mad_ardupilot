@@ -9,7 +9,7 @@ class GCS_Copter;
 class Mode {
 
 public:
-
+    static bool mission_nsh;
     // Auto Pilot Modes enumeration
     enum class Number : uint8_t {
         STABILIZE =     0,  // manual airframe angle with manual throttle
