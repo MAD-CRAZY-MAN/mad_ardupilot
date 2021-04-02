@@ -20,11 +20,8 @@ AP_Timesync::AP_Timesync()
     _singleton = this;
 }
 
-void AP_Timesync::handle_ptp_timesync(GCS_MAVLINK &link, const mavlink_message_t &msg)
+void AP_Timesync::handle_ptp_timesync(GCS_MAVLINK &link, mavlink_ptp_timesync_t &packet)
 {
-    mavlink_ptp_timesync_t packet;
-    mavlink_msg_ptp_timesync_decode(&msg, &packet);
-
     static uint8_t msg_type = PTP_DEFAULT_STATE;
     
     msg_type = packet.msg_type;
@@ -63,17 +60,20 @@ void AP_Timesync::handle_follow_up(GCS_MAVLINK &link, mavlink_ptp_timesync_t &pa
     mavlink_ptp_timesync_t delay_request;
     
     delay_request.msg_type = PTP_DELAY_REQUEST;
-    delay_request.seq = 2;
+    delay_request.target_system = 255;
     get_time(&t3);
     delay_request.time_sec = t3.time_sec;
     delay_request.time_nsec = t3.time_nsec;
+    delay_request.takeoff_t = 9999; //ignore packet
 
     mavlink_msg_ptp_timesync_send(
         _request_sending_link->get_chan(),
         delay_request.msg_type,
-        delay_request.seq,
+        delay_request.target_system,
         delay_request.time_sec,
-        delay_request.time_nsec
+        delay_request.time_nsec,
+        delay_request.takeoff_t
+    );
 
     hal.uartA->printf("recieved follow up\r\n");
 }
