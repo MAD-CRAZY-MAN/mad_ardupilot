@@ -161,13 +161,13 @@ void AP_Timesync::time_add(struct timespec *output, const struct timespec *left,
         nsec += AP_NSEC_PER_SEC;
         sec--;
     }
-    if(sec<=0 && nsec < -AP_NSEC_PER_SEC)
+    if(sec<=0 && nsec < -(long)AP_NSEC_PER_SEC)
     {
         nsec += AP_NSEC_PER_SEC;
         sec--;
     }
 
-    if(nsec >= AP_NSEC_PER_SEC)
+    if(nsec >= (long)AP_NSEC_PER_SEC)
     {
         nsec -= AP_NSEC_PER_SEC;
         sec++;
@@ -184,7 +184,7 @@ void AP_Timesync::time_sub(struct timespec *output, const struct timespec *left,
 
     if(left->time_sec >= 0 && left->time_nsec>=0)
     {
-        if((sec < 0 && nsec > 0) || (sec > 0 && nsec >= AP_NSEC_PER_SEC))
+        if((sec < 0 && nsec > 0) || (sec > 0 && nsec >= (long)AP_NSEC_PER_SEC))
         {
             nsec -= AP_NSEC_PER_SEC;
             sec++;
@@ -196,14 +196,14 @@ void AP_Timesync::time_sub(struct timespec *output, const struct timespec *left,
 
     }
     else{
-        if(nsec <= -AP_NSEC_PER_SEC || nsec >= AP_NSEC_PER_SEC)
+        if(nsec <= -(long)AP_NSEC_PER_SEC || nsec >= (long)AP_NSEC_PER_SEC)
         {
-            nsec += AP_NSEC_PER_SEC;
+            nsec += (long)AP_NSEC_PER_SEC;
             sec--;
         }
         if((sec < 0 && nsec > 0))
         {
-            nsec -= AP_NSEC_PER_SEC;
+            nsec -= (long)AP_NSEC_PER_SEC;
             sec++;
         }
     }
