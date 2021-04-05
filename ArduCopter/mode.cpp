@@ -1,5 +1,4 @@
 #include "Copter.h"
-
 /*
  * High level calls to set and update flight modes logic for individual
  * flight modes is in control_acro.cpp, control_stabilize.cpp, etc

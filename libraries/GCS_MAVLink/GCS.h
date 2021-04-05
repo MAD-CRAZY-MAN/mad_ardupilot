@@ -377,6 +377,7 @@ protected:
     // returns a timestamp suitable for packing into the ts1 field of TIMESYNC:
     uint64_t timesync_timestamp_ns() const;
     void handle_timesync(const mavlink_message_t &msg);
+
     struct {
         int64_t sent_ts1;
         uint32_t last_sent_ms;
