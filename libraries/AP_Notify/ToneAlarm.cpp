@@ -214,10 +214,6 @@ void AP_ToneAlarm::update()
     }
     flags.compass_cal_running = AP_Notify::flags.compass_cal_running;
 
-    if(AP_Notify::flags.sec_10){
-        play_tone(AP_NOTIFY_TONE_QUIET_NEU_FEEDBACK);
-        AP_Notify::flags.sec_10 = false;
-    }
     if (AP_Notify::events.compass_cal_canceled) {
         play_tone(AP_NOTIFY_TONE_QUIET_NEU_FEEDBACK);
         return;
