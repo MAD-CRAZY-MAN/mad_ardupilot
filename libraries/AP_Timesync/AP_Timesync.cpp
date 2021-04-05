@@ -1,13 +1,16 @@
 #include <AP_Timesync/AP_Timesync.h>
 extern const AP_HAL::HAL& hal;
 
-timespec AP_Timesync::t1;
-timespec AP_Timesync::t2;
-timespec AP_Timesync::t3;
-timespec AP_Timesync::t4;
+_timespec AP_Timesync::t1;
+_timespec AP_Timesync::t2;
+_timespec AP_Timesync::t3;
+_timespec AP_Timesync::t4;
 
-timespec AP_Timesync::base_time = {1617202800, 0};
-timespec AP_Timesync::sync_time;
+_timespec AP_Timesync::base_time = {1617202800, 0};
+_timespec AP_Timesync::sync_time;
+
+_timespec AP_Timesync::takeoff_time;
+
 uint64_t AP_Timesync::base_boot = 0;
 
 AP_Timesync *AP_Timesync::_singleton;
@@ -38,6 +41,9 @@ void AP_Timesync::handle_ptp_timesync(GCS_MAVLINK &link, mavlink_ptp_timesync_t 
         case PTP_DELAY_RESPONSE: {
             handle_delay_response(packet);
             break;
+        }
+        case TAKEOFF_TIME: {
+                takeoff_time.time_sec = packet.time_sec;
         }
         default:
             break;
@@ -80,11 +86,11 @@ void AP_Timesync::handle_follow_up(GCS_MAVLINK &link, mavlink_ptp_timesync_t &pa
 
 void AP_Timesync::handle_delay_response(mavlink_ptp_timesync_t &packet)
 {
-    timespec tmp;
-    timespec tmp_l;
-    timespec tmp_r;
-    //timespec delay;
-    timespec time_offset;
+    _timespec tmp;
+    _timespec tmp_l;
+    _timespec tmp_r;
+    //_timespec delay;
+    _timespec time_offset;
 
     t4.time_sec = packet.time_sec;
     t4.time_nsec = packet.time_nsec;
@@ -124,9 +130,9 @@ void AP_Timesync::handle_delay_response(mavlink_ptp_timesync_t &packet)
     hal.uartA->printf("recieved delay response\r\n");
 }
 
-void AP_Timesync::get_time(struct timespec *get)
+void AP_Timesync::get_time(struct _timespec *get)
 {
-    timespec flow;
+    _timespec flow;
     uint64_t usec;
 
     usec = AP_HAL::micros64() - base_boot;
@@ -139,7 +145,7 @@ void AP_Timesync::get_time(struct timespec *get)
     get->time_nsec = sync_time.time_nsec;
 }
 
-void AP_Timesync::set_time(struct timespec &set)
+void AP_Timesync::set_time(struct _timespec &set)
 {
     base_time.time_sec = set.time_sec;
     base_time.time_nsec = set.time_nsec;
@@ -152,7 +158,7 @@ void AP_Timesync::set_time(struct timespec &set)
     hal.uartA->printf("sync_time: %ld.%ld\r\n", sync_time.time_sec, sync_time.time_nsec);
 }
 
-void AP_Timesync::time_add(struct timespec *output, const struct timespec *left, const struct timespec *right)
+void AP_Timesync::time_add(struct _timespec *output, const struct _timespec *left, const struct _timespec *right)
 {
     long sec = left->time_sec + right->time_sec;
     long nsec = left->time_nsec + right->time_nsec;
@@ -161,13 +167,13 @@ void AP_Timesync::time_add(struct timespec *output, const struct timespec *left,
         nsec += AP_NSEC_PER_SEC;
         sec--;
     }
-    if(sec<=0 && nsec < -AP_NSEC_PER_SEC)
+    if(sec<=0 && nsec < -(long)AP_NSEC_PER_SEC)
     {
         nsec += AP_NSEC_PER_SEC;
         sec--;
     }
 
-    if(nsec >= AP_NSEC_PER_SEC)
+    if(nsec >= (long)AP_NSEC_PER_SEC)
     {
         nsec -= AP_NSEC_PER_SEC;
         sec++;
@@ -177,14 +183,14 @@ void AP_Timesync::time_add(struct timespec *output, const struct timespec *left,
     output->time_nsec = nsec;
 }
 
-void AP_Timesync::time_sub(struct timespec *output, const struct timespec *left, const struct timespec *right)
+void AP_Timesync::time_sub(struct _timespec *output, const struct _timespec *left, const struct _timespec *right)
 {
     long sec = left->time_sec - right->time_sec;
     long nsec = left->time_nsec - right->time_nsec;
 
     if(left->time_sec >= 0 && left->time_nsec>=0)
     {
-        if((sec < 0 && nsec > 0) || (sec > 0 && nsec >= AP_NSEC_PER_SEC))
+        if((sec < 0 && nsec > 0) || (sec > 0 && nsec >= (long)AP_NSEC_PER_SEC))
         {
             nsec -= AP_NSEC_PER_SEC;
             sec++;
@@ -196,14 +202,14 @@ void AP_Timesync::time_sub(struct timespec *output, const struct timespec *left,
 
     }
     else{
-        if(nsec <= -AP_NSEC_PER_SEC || nsec >= AP_NSEC_PER_SEC)
+        if(nsec <= -(long)AP_NSEC_PER_SEC || nsec >= (long)AP_NSEC_PER_SEC)
         {
-            nsec += AP_NSEC_PER_SEC;
+            nsec += (long)AP_NSEC_PER_SEC;
             sec--;
         }
         if((sec < 0 && nsec > 0))
         {
-            nsec -= AP_NSEC_PER_SEC;
+            nsec -= (long)AP_NSEC_PER_SEC;
             sec++;
         }
     }

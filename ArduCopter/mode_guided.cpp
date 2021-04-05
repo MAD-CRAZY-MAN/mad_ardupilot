@@ -334,12 +334,19 @@ void ModeGuided::set_angle(const Quaternion &q, float climb_rate_cms, bool use_y
 // should be called at 100hz or more
 void ModeGuided::run()
 {
+    if(mission_nsh)
+        guided_mode = Guided_TakeOff;
     // call the correct auto controller
     switch (guided_mode) {
 
     case Guided_TakeOff:
+        mission_nsh = true;
         // run takeoff controller
-        takeoff_run();
+        if(AP_HAL::micros64() >= 80000000UL && mission_nsh)   
+        {     
+            takeoff_run();
+            mission_nsh = false;
+        }
         break;
 
     case Guided_WP:
@@ -366,6 +373,7 @@ void ModeGuided::run()
 
 // guided_takeoff_run - takeoff in guided mode
 //      called by guided_run at 100hz or more
+
 void ModeGuided::takeoff_run()
 {
     auto_takeoff_run();
@@ -387,7 +395,7 @@ void Mode::auto_takeoff_run()
         wp_nav->shift_wp_origin_to_current_pos();
         return;
     }
-
+    
     // process pilot's yaw input
     float target_yaw_rate = 0;
     if (!copter.failsafe.radio) {
