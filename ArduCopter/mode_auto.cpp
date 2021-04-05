@@ -77,6 +77,7 @@ void ModeAuto::run()
             {
                 takeoff_run();
                 mission_nsh = false;    
+                AP::ptp().takeoff_time.time_sec = 0L;
             }
         }   
         break;
