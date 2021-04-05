@@ -340,13 +340,20 @@ void ModeGuided::run()
     switch (guided_mode) {
 
     case Guided_TakeOff:
-        mission_nsh = true;
-        // run takeoff controller
-        if(AP_HAL::micros64() >= 80000000UL && mission_nsh)   
-        {     
+        if(AP::ptp().takeoff_time.time_sec == 0L)
             takeoff_run();
-            mission_nsh = false;
-        }
+        else 
+        {
+            mission_nsh = true;
+            _timespec get;
+            AP::ptp().get_time(&get);            
+            
+            if(get.time_sec >= AP::ptp().takeoff_time.time_sec && mission_nsh)   
+            {
+                takeoff_run();
+                mission_nsh = false;    
+            }
+        }  
         break;
 
     case Guided_WP:
