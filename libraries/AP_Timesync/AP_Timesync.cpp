@@ -9,7 +9,7 @@ _timespec AP_Timesync::t4;
 _timespec AP_Timesync::base_time = {1617202800, 0};
 _timespec AP_Timesync::sync_time;
 
-_timespec AP_Timesync::takeoff_time;
+_timespec AP_Timesync::takeoff_time = {0, 0};
 
 uint64_t AP_Timesync::base_boot = 0;
 

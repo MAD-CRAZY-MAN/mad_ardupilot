@@ -64,15 +64,22 @@ void ModeAuto::run()
     switch (_mode) {
 
     case Auto_TakeOff:
-        mission_nsh = true;
-        _timespec get;
-        AP::ptp().get_time(&get);
-        
-        if(get.time_sec >= AP::ptp().takeoff_time.time_sec && mission_nsh)   
-        {                  
+                
+        if(AP::ptp().takeoff_time.time_sec == 0L)
             takeoff_run();
-            mission_nsh = false;    
-        }
+        else 
+        {
+            mission_nsh = true;
+            _timespec get;
+            AP::ptp().get_time(&get);            
+            
+            if(get.time_sec >= AP::ptp().takeoff_time.time_sec && mission_nsh)   
+            {
+                takeoff_run();
+                mission_nsh = false;    
+                AP::ptp().takeoff_time.time_sec = 0L;
+            }
+        }   
         break;
 
     case Auto_WP:
