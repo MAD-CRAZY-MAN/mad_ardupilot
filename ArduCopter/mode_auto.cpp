@@ -56,6 +56,8 @@ bool ModeAuto::init(bool ignore_checks)
 //      relies on run_autopilot being called at 10hz which handles decision making and non-navigation related commands
 bool Mode::_takeoff = false;
 bool Mode::_wp = false;
+uint32_t Mode::_wp_offset = 0;
+
 void ModeAuto::run()
 {
     if(_takeoff)
@@ -87,12 +89,16 @@ void ModeAuto::run()
     case Auto_WP:
     case Auto_CircleMoveToEdge:
         _wp = true;
-        uint64_t time = AP_HAL::micros64();
-        if(time >= 40000000 && _wp)
-        {
-            wp_run();
-            _wp = false;
-        }
+
+         if(AP_HAL::micros64() >= 70000000UL + _wp_offset && _wp)
+         {
+             wp_run();
+             _wp = false;
+             _wp_offset += 20000000;
+         }
+         else 
+            copter.mode_brake.run();
+         
         break;
 
     case Auto_Land:
