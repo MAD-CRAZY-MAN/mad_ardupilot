@@ -64,7 +64,6 @@ void ModeAuto::run()
     switch (_mode) {
 
     case Auto_TakeOff:
-                
         if(AP::ptp().takeoff_time.time_sec == 0L)
             takeoff_run();
         else 
