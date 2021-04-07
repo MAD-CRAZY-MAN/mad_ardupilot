@@ -54,12 +54,14 @@ bool ModeAuto::init(bool ignore_checks)
 // auto_run - runs the auto controller
 //      should be called at 100hz or more
 //      relies on run_autopilot being called at 10hz which handles decision making and non-navigation related commands
-bool Mode::mission_nsh;
-
+bool Mode::_takeoff = false;
+bool Mode::_wp = false;
 void ModeAuto::run()
 {
-    if(mission_nsh)
+    if(_takeoff)
         _mode = Auto_TakeOff;
+    else if(_wp)
+        _mode = Auto_WP;
     // call the correct auto controller
     switch (_mode) {
 
@@ -69,14 +71,14 @@ void ModeAuto::run()
             takeoff_run();
         else 
         {
-            mission_nsh = true;
+            _takeoff = true;
             _timespec get;
             AP::ptp().get_time(&get);            
             
-            if(get.time_sec >= AP::ptp().takeoff_time.time_sec && mission_nsh)   
+            if(get.time_sec >= AP::ptp().takeoff_time.time_sec && _takeoff)   
             {
                 takeoff_run();
-                mission_nsh = false;    
+                _takeoff = false;    
                 AP::ptp().takeoff_time.time_sec = 0L;
             }
         }   
@@ -84,7 +86,13 @@ void ModeAuto::run()
 
     case Auto_WP:
     case Auto_CircleMoveToEdge:
-        wp_run();
+        _wp = true;
+        uint64_t time = AP_HAL::micros64();
+        if(time >= 40000000 && _wp)
+        {
+            wp_run();
+            _wp = false;
+        }
         break;
 
     case Auto_Land:

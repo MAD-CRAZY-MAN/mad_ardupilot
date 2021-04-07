@@ -334,7 +334,7 @@ void ModeGuided::set_angle(const Quaternion &q, float climb_rate_cms, bool use_y
 // should be called at 100hz or more
 void ModeGuided::run()
 {
-    if(mission_nsh)
+    if(_takeoff)
         guided_mode = Guided_TakeOff;
     // call the correct auto controller
     switch (guided_mode) {
@@ -344,14 +344,14 @@ void ModeGuided::run()
             takeoff_run();
         else 
         {
-            mission_nsh = true;
+            _takeoff = true;
             _timespec get;
             AP::ptp().get_time(&get);            
             
-            if(get.time_sec >= AP::ptp().takeoff_time.time_sec && mission_nsh)   
+            if(get.time_sec >= AP::ptp().takeoff_time.time_sec && _takeoff)   
             {
                 takeoff_run();
-                mission_nsh = false;    
+                _takeoff = false;    
                 AP::ptp().takeoff_time.time_sec = 0L;
             }
         }  
