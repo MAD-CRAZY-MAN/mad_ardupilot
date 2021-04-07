@@ -671,7 +671,7 @@ void GCS_MAVLINK::handle_mission_item(const mavlink_message_t &msg)
         struct AP_Mission::Mission_Command cmd = {};
         MAV_MISSION_RESULT result = AP_Mission::mavlink_int_to_mission_cmd(packet, cmd);
         if (result != MAV_MISSION_ACCEPTED) {
-            //decofailedde 
+            //decode failed 
             send_mission_ack(msg, MAV_MISSION_TYPE_MISSION, result);
             return;
         }
