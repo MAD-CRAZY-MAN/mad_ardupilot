@@ -74,7 +74,7 @@ void ModeAuto::run()
             _timespec get;
             AP::ptp().get_time(&get);            
             
-            if(get.time_sec >= AP::ptp().takeoff_time.time_sec && _takeoff)   
+            if((get.time_sec >= AP::ptp().takeoff_time.time_sec) && _takeoff)   
             {
                 takeoff_run();
                 _takeoff = false;    
