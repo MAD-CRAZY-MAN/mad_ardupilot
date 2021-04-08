@@ -54,12 +54,15 @@ bool ModeAuto::init(bool ignore_checks)
 // auto_run - runs the auto controller
 //      should be called at 100hz or more
 //      relies on run_autopilot being called at 10hz which handles decision making and non-navigation related commands
-bool Mode::mission_nsh;
-
+bool Mode::_takeoff = false;
+bool Mode::_wp = false;
+uint32_t Mode::_wp_offset = 0;
 void ModeAuto::run()
 {
-    if(mission_nsh)
+    if(_takeoff)
         _mode = Auto_TakeOff;
+    else if(_wp)
+        _mode = Auto_WP;
     // call the correct auto controller
     switch (_mode) {
 
@@ -68,14 +71,14 @@ void ModeAuto::run()
             takeoff_run();
         else 
         {
-            mission_nsh = true;
+            _takeoff = true;
             _timespec get;
             AP::ptp().get_time(&get);            
             
-            if(get.time_sec >= AP::ptp().takeoff_time.time_sec && mission_nsh)   
+            if(get.time_sec >= AP::ptp().takeoff_time.time_sec && _takeoff)   
             {
                 takeoff_run();
-                mission_nsh = false;    
+                _takeoff = false;    
                 AP::ptp().takeoff_time.time_sec = 0L;
             }
         }   
@@ -83,7 +86,17 @@ void ModeAuto::run()
 
     case Auto_WP:
     case Auto_CircleMoveToEdge:
-        wp_run();
+        _wp = true;
+        
+        if(AP_HAL::micros64() >= 70000000UL + _wp_offset && _wp)
+        {
+            wp_run();
+            _wp = false;
+            _wp_offset += 20000000;
+        }
+        else
+            copter.mode_brake.run();
+            
         break;
 
     case Auto_Land:
