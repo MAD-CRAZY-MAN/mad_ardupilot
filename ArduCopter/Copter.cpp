@@ -387,7 +387,7 @@ void Copter::ten_hz_logging_loop()
 // twentyfive_hz_logging - should be run at 25hz
 void Copter::twentyfive_hz_logging()
 {
-        //test
+    /*
     Location origin;
     Location target;
 
@@ -411,7 +411,7 @@ void Copter::twentyfive_hz_logging()
     target.alt = -1000; //10m
 
     dist = origin.get_distance_NED(target);
-    hal.uartA->printf("alt distanc: %f\r\n", dist.length());
+    hal.uartA->printf("alt distanc: %f\r\n", dist.length());*/
 #if HIL_MODE != HIL_MODE_DISABLED
     // HIL for a copter needs very fast update of the servo values
     gcs().send_message(MSG_SERVO_OUTPUT_RAW);
