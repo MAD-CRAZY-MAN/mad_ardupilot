@@ -28,7 +28,7 @@ void AP_Timesync::handle_ptp_timesync(GCS_MAVLINK &link, mavlink_ptp_timesync_t 
     static uint8_t msg_type = PTP_DEFAULT_STATE;
     
     msg_type = packet.msg_type;
-
+    
     switch(msg_type){
         case PTP_SYNC: {
             handle_sync(packet);
@@ -44,6 +44,7 @@ void AP_Timesync::handle_ptp_timesync(GCS_MAVLINK &link, mavlink_ptp_timesync_t 
         }
         case TAKEOFF_TIME: {
                 takeoff_time.time_sec = packet.time_sec;
+                hal.uartA->printf("takeoff time: %d", takeoff_time.time_sec);
         }
         default:
             break;
@@ -59,7 +60,7 @@ void AP_Timesync::handle_sync(mavlink_ptp_timesync_t &packet)
 void AP_Timesync::handle_follow_up(GCS_MAVLINK &link, mavlink_ptp_timesync_t &packet)
 {
     _request_sending_link = &link;
- 
+    hal.uartA->printf("link: %d\r\n", (mavlink_channel_t)_request_sending_link->get_chan());
     t1.time_sec = packet.time_sec;
     t1.time_nsec = packet.time_nsec;
     
@@ -80,6 +81,8 @@ void AP_Timesync::handle_follow_up(GCS_MAVLINK &link, mavlink_ptp_timesync_t &pa
         delay_request.time_nsec,
         delay_request.takeoff_t
     );
+
+     
 
     hal.uartA->printf("recieved follow up\r\n");
 }
