@@ -11,11 +11,15 @@ class Mode {
 public:
     static bool _takeoff;
 <<<<<<< HEAD
+<<<<<<< HEAD
     static bool _wp;
     static uint32_t _wp_offset;
 =======
 
 >>>>>>> takeoffSync
+=======
+    
+>>>>>>> missionSync
     // Auto Pilot Modes enumeration
     enum class Number : uint8_t {
         STABILIZE =     0,  // manual airframe angle with manual throttle
@@ -466,7 +470,7 @@ private:
     // Loiter control
     uint16_t loiter_time_max;                // How long we should stay in Loiter Mode for mission scripting (time in seconds)
     uint32_t loiter_time;                    // How long have we been loitering - The start time in millis
-
+    static uint32_t last_loiter_time;
     struct {
         bool reached_destination_xy : 1;
         bool loiter_start_done : 1;

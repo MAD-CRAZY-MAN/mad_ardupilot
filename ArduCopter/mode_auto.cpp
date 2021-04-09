@@ -56,16 +56,23 @@ bool ModeAuto::init(bool ignore_checks)
 //      relies on run_autopilot being called at 10hz which handles decision making and non-navigation related commands
 bool Mode::_takeoff = false;
 <<<<<<< HEAD
+<<<<<<< HEAD
 bool Mode::_wp = false;
 uint32_t Mode::_wp_offset = 0;
 =======
 
 >>>>>>> takeoffSync
+=======
+
+>>>>>>> missionSync
 void ModeAuto::run()
 {
     if(_takeoff)
         _mode = Auto_TakeOff;
+<<<<<<< HEAD
 
+=======
+>>>>>>> missionSync
     // call the correct auto controller
     switch (_mode) {
 
@@ -90,6 +97,7 @@ void ModeAuto::run()
     case Auto_WP:
     case Auto_CircleMoveToEdge:
 <<<<<<< HEAD
+<<<<<<< HEAD
         _wp = true;
         
         if(AP_HAL::micros64() >= 70000000UL + _wp_offset && _wp)
@@ -104,6 +112,9 @@ void ModeAuto::run()
 =======
         wp_run();
 >>>>>>> takeoffSync
+=======
+        wp_run();
+>>>>>>> missionSync
         break;
 
     case Auto_Land:
@@ -1824,7 +1835,10 @@ bool ModeAuto::verify_yaw()
     // check if we are within 2 degrees of the target heading
     return (fabsf(wrap_180_cd(ahrs.yaw_sensor-auto_yaw.yaw())) <= 200);
 }
-
+#define target_time 10
+#define margin 5
+#define hold_time 5
+uint32_t ModeAuto::last_loiter_time = 0;
 // verify_nav_wp - check if we have reached the next way point
 bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
@@ -1832,7 +1846,7 @@ bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
     if ( !copter.wp_nav->reached_wp_destination() ) {
         return false;
     }
-
+/*
     // start timer if necessary
     if (loiter_time == 0) {
         loiter_time = millis();
@@ -1849,6 +1863,22 @@ bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 			AP_Notify::events.waypoint_complete = 1;
 			}
         gcs().send_text(MAV_SEVERITY_INFO, "Reached command #%i",cmd.index);
+        return true;
+    }
+    return false;*/
+
+    //get takeoff time
+    hal.uartA->printf("%d\r\n", loiter_time);
+ 
+    if(last_loiter_time==0)
+    {
+        last_loiter_time = 60 + target_time + margin + hold_time;
+        hal.uartA->printf("last_loiter_time: %d", last_loiter_time);
+    }
+
+    if((AP_HAL::millis64()/1000) >= last_loiter_time) {
+        last_loiter_time += target_time + margin + hold_time;
+        hal.uartA->printf("last_loiter_time: %d", last_loiter_time);
         return true;
     }
     return false;
