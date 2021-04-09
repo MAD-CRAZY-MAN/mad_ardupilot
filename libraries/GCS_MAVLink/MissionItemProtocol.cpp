@@ -12,7 +12,7 @@ void MissionItemProtocol::init_send_requests(GCS_MAVLINK &_link,
     receiving = true;              // record that we expect to receive commands
     request_i = _request_first;                 // reset the next expected command number to zero
     request_last = _request_last;         // record how many commands we expect to receive
-
+    
     dest_sysid = msg.sysid;       // record system id of GCS who wants to upload the mission
     dest_compid = msg.compid;     // record component id of GCS who wants to upload the mission
 
@@ -259,6 +259,7 @@ void MissionItemProtocol::handle_mission_item(const mavlink_message_t &msg, cons
     request_i++;
 
     if (request_i > request_last) {
+        //미션 다 받음, 거리와 속도 계산
         transfer_is_complete(*link, msg);
         return;
     }
