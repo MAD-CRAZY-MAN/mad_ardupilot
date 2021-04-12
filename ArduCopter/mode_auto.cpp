@@ -64,7 +64,7 @@ void ModeAuto::run()
     switch (_mode) {
 
     case Auto_TakeOff:
-                
+        /*        
         if(AP::ptp().takeoff_time.time_sec == 0L)
             takeoff_run();
         else 
@@ -79,6 +79,13 @@ void ModeAuto::run()
                 _takeoff = false;    
                 AP::ptp().takeoff_time.time_sec = 0L;
             }
+        }*/
+        _takeoff = true;
+        if((millis()/1000)>=start_time)
+        {
+            hal.uartA->printf("start takeoff: %d", millis()/1000);
+            takeoff_run();
+            _takeoff = false;
         }   
         break;
 
@@ -1528,19 +1535,29 @@ void ModeAuto::do_RTL(void)
 /********************************************************************************/
 //	Verify Nav (Must) commands
 /********************************************************************************/
-
+#define target_time 10
+#define margin 5
+#define hold_time 5
 // verify_takeoff - check if we have completed the takeoff
 bool ModeAuto::verify_takeoff()
 {
     // have we reached our target altitude?
     const bool reached_wp_dest = copter.wp_nav->reached_wp_destination();
-
-    // retract the landing gear
-    if (reached_wp_dest) {
-        copter.landinggear.retract_after_takeoff();
+    bool takeoff_start_time = false;
+    
+    if(start_time==60)
+        start_time += target_time + margin + hold_time;
+    if((millis()/1000) >= start_time){
+        takeoff_start_time = true;
+        start_time += target_time + margin + hold_time;
     }
 
-    return reached_wp_dest;
+    // retract the landing gear
+    if (reached_wp_dest && takeoff_start_time) {
+        copter.landinggear.retract_after_takeoff();
+    }
+    
+    return takeoff_start_time;
 }
 
 // verify_land - returns true if landing has been completed
@@ -1824,7 +1841,7 @@ bool ModeAuto::verify_yaw()
 #define target_time 10
 #define margin 5
 #define hold_time 5
-uint32_t Mode::start_time = 0;
+uint32_t Mode::start_time = 60;
 // verify_nav_wp - check if we have reached the next way point
 bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
@@ -1873,11 +1890,6 @@ bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
     }
     return false;
 */
-    if(start_time==0)
-    {
-        start_time = 60 + target_time + margin + hold_time;
-        hal.uartA->printf("start time: %d\r\n", start_time);
-    }
     if((AP_HAL::millis64()/1000) >= start_time){
         start_time += target_time + margin + hold_time;
         hal.uartA->printf("start time: %d\r\n", start_time);
