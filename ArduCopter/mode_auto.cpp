@@ -1136,6 +1136,22 @@ void ModeAuto::do_nav_wp(const AP_Mission::Mission_Command& cmd)
     // this is the delay, stored in seconds
     loiter_time_max = cmd.p1;
 
+    Location current;
+    AP_Mission::Mission_Command current_cmd;
+    mission.get_next_nav_cmd(cmd.index-1, current_cmd);
+    current = loc_from_cmd(current_cmd);
+    Vector3f dist = current.get_distance_NED(target_loc);
+
+    uint16_t target_speed = (dist.length()*100)/10.0;
+ 
+    if(target_speed>500)
+        target_speed = 500;
+    if(target_speed<20)
+        target_speed = 20;
+    copter.wp_nav->set_speed_xy(target_speed);
+    hal.uartA->printf("target speed: %d\r\n", target_speed);
+    hal.uartA->printf("alt distance: %f\r\n", dist.length());
+
     // Set wp navigation target
     wp_start(target_loc);
 
@@ -1845,10 +1861,12 @@ bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
         last_loiter_time = AP::ptp().takeoff_time.time_sec + target_time + margin + hold_time;
         hal.uartA->printf("last_loiter_time: %d", last_loiter_time);
     }
-
-    if(get_time.time_sec >= last_loiter_time) {
+    else if(get_time.time_sec >= last_loiter_time) {
+        copter.wp_nav->set_speed_xy(20.0);
         last_loiter_time += target_time + margin + hold_time;
         hal.uartA->printf("last_loiter_time: %d", last_loiter_time);
+        
+        gcs().send_text(MAV_SEVERITY_INFO, "Reached command #%i",cmd.index);
         return true;
     }
     return false;
