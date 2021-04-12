@@ -289,7 +289,6 @@ void MissionItemProtocol::handle_mission_item(const mavlink_message_t &msg, cons
     request_i++;
 
     if (request_i > request_last) {
-        //미션 다 받음, 거리와 속도 계산
         transfer_is_complete(*link, msg);
         return;
     }

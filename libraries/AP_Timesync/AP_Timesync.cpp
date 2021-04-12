@@ -54,13 +54,13 @@ void AP_Timesync::handle_ptp_timesync(GCS_MAVLINK &link, mavlink_ptp_timesync_t 
 void AP_Timesync::handle_sync(mavlink_ptp_timesync_t &packet)
 {
     get_time(&t2);
-    hal.uartA->printf("recieved sync\r\n");
+    //hal.uartA->printf("recieved sync\r\n");
 }
 
 void AP_Timesync::handle_follow_up(GCS_MAVLINK &link, mavlink_ptp_timesync_t &packet)
 {
     _request_sending_link = &link;
-    hal.uartA->printf("link: %d\r\n", (mavlink_channel_t)_request_sending_link->get_chan());
+    //hal.uartA->printf("link: %d\r\n", (mavlink_channel_t)_request_sending_link->get_chan());
     t1.time_sec = packet.time_sec;
     t1.time_nsec = packet.time_nsec;
     
@@ -84,7 +84,7 @@ void AP_Timesync::handle_follow_up(GCS_MAVLINK &link, mavlink_ptp_timesync_t &pa
 
      
 
-    hal.uartA->printf("recieved follow up\r\n");
+    //hal.uartA->printf("recieved follow up\r\n");
 }
 
 void AP_Timesync::handle_delay_response(mavlink_ptp_timesync_t &packet)

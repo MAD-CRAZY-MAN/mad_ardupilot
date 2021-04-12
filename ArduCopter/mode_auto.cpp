@@ -77,6 +77,10 @@ void ModeAuto::run()
     switch (_mode) {
 
     case Auto_TakeOff:
+<<<<<<< HEAD
+=======
+        /*        
+>>>>>>> missionSync
         if(AP::ptp().takeoff_time.time_sec == 0L)
             takeoff_run();
         else 
@@ -91,6 +95,13 @@ void ModeAuto::run()
                 _takeoff = false;    
                 AP::ptp().takeoff_time.time_sec = 0L;
             }
+        }*/
+        _takeoff = true;
+        if((millis()/1000)>=start_time)
+        {
+            hal.uartA->printf("start takeoff: %d", millis()/1000);
+            takeoff_run();
+            _takeoff = false;
         }   
         break;
 
@@ -1166,6 +1177,22 @@ void ModeAuto::do_nav_wp(const AP_Mission::Mission_Command& cmd)
     // this is the delay, stored in seconds
     loiter_time_max = cmd.p1;
 
+    Location current;
+    AP_Mission::Mission_Command current_cmd;
+    mission.get_next_nav_cmd(cmd.index-1, current_cmd);
+    current = loc_from_cmd(current_cmd);
+    Vector3f dist = current.get_distance_NED(target_loc);
+
+    uint16_t target_speed = (dist.length()*100)/10.0;
+ 
+    if(target_speed>500)
+        target_speed = 500;
+    if(target_speed<20)
+        target_speed = 20;
+    copter.wp_nav->set_speed_xy(target_speed);
+    hal.uartA->printf("target speed: %d\r\n", target_speed);
+    hal.uartA->printf("alt distance: %f\r\n", dist.length());
+
     // Set wp navigation target
     wp_start(target_loc);
 
@@ -1542,19 +1569,29 @@ void ModeAuto::do_RTL(void)
 /********************************************************************************/
 //	Verify Nav (Must) commands
 /********************************************************************************/
-
+#define target_time 10
+#define margin 5
+#define hold_time 5
 // verify_takeoff - check if we have completed the takeoff
 bool ModeAuto::verify_takeoff()
 {
     // have we reached our target altitude?
     const bool reached_wp_dest = copter.wp_nav->reached_wp_destination();
-
-    // retract the landing gear
-    if (reached_wp_dest) {
-        copter.landinggear.retract_after_takeoff();
+    bool takeoff_start_time = false;
+    
+    if(start_time==60)
+        start_time += target_time + margin + hold_time;
+    if((millis()/1000) >= start_time){
+        takeoff_start_time = true;
+        start_time += target_time + margin + hold_time;
     }
 
-    return reached_wp_dest;
+    // retract the landing gear
+    if (reached_wp_dest && takeoff_start_time) {
+        copter.landinggear.retract_after_takeoff();
+    }
+    
+    return takeoff_start_time;
 }
 
 // verify_land - returns true if landing has been completed
@@ -1838,7 +1875,7 @@ bool ModeAuto::verify_yaw()
 #define target_time 10
 #define margin 5
 #define hold_time 5
-uint32_t ModeAuto::last_loiter_time = 0;
+uint32_t Mode::start_time = 60;
 // verify_nav_wp - check if we have reached the next way point
 bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
@@ -1867,18 +1904,29 @@ bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
     }
     return false;*/
 
-    //get takeoff time
-    hal.uartA->printf("%d\r\n", loiter_time);
- 
+/*ptp
+    _timespec get_time;
+    
     if(last_loiter_time==0)
     {
-        last_loiter_time = 60 + target_time + margin + hold_time;
-        hal.uartA->printf("last_loiter_time: %d", last_loiter_time);
+        last_loiter_time = AP::ptp().takeoff_time.time_sec + target_time + margin + hold_time;
+        hal.uartA->printf("last_loiter_time: %d\r\n", last_loiter_time);
     }
+    
+    AP::ptp().get_time(&get_time);
 
-    if((AP_HAL::millis64()/1000) >= last_loiter_time) {
+    if(get_time.time_sec >= last_loiter_time) {
         last_loiter_time += target_time + margin + hold_time;
-        hal.uartA->printf("last_loiter_time: %d", last_loiter_time);
+        hal.uartA->printf("last_loiter_time: %d\r\n", last_loiter_time);
+        
+        gcs().send_text(MAV_SEVERITY_INFO, "Reached command #%i",cmd.index);
+        return true;
+    }
+    return false;
+*/
+    if((AP_HAL::millis64()/1000) >= start_time){
+        start_time += target_time + margin + hold_time;
+        hal.uartA->printf("start time: %d\r\n", start_time);
         return true;
     }
     return false;
