@@ -1837,16 +1837,16 @@ bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
     }
     return false;*/
 
-    //get takeoff time
-    hal.uartA->printf("%d\r\n", loiter_time);
- 
+    _timespec get_time;
+    AP::ptp().get_time(&get_time);
+
     if(last_loiter_time==0)
     {
-        last_loiter_time = 60 + target_time + margin + hold_time;
+        last_loiter_time = AP::ptp().takeoff_time.time_sec + target_time + margin + hold_time;
         hal.uartA->printf("last_loiter_time: %d", last_loiter_time);
     }
 
-    if((AP_HAL::millis64()/1000) >= last_loiter_time) {
+    if(get_time.time_sec >= last_loiter_time) {
         last_loiter_time += target_time + margin + hold_time;
         hal.uartA->printf("last_loiter_time: %d", last_loiter_time);
         return true;
