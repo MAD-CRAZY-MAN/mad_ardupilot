@@ -96,10 +96,12 @@ void ModeRTL::run(bool disarm_on_land)
 
     case RTL_FinalDescent:
         descent_run();
+        hal.uartA->printf("desecnt\r\n");
         break;
 
     case RTL_Land:
         land_run(disarm_on_land);
+        hal.uartA->printf("land\r\n");
         break;
     }
 }
@@ -111,10 +113,10 @@ void ModeRTL::climb_start()
     _state_complete = false;
 
     // RTL_SPEED == 0 means use WPNAV_SPEED
-    if (g.rtl_speed_cms != 0) {
+    if (g.rtl_speed_cms != 0) { //만약 wp sync 아니라면 파라미터 적용
         wp_nav->set_speed_xy(g.rtl_speed_cms);
     }
-
+    
     // set the destination
     if (!wp_nav->set_wp_destination(rtl_path.climb_target)) {
         // this should not happen because rtl_build_path will have checked terrain data was available
@@ -138,7 +140,7 @@ void ModeRTL::return_start()
         // failure must be caused by missing terrain data, restart RTL
         restart_without_terrain();
     }
-
+    hal.uartA->printf("return target X: %f, Y:%f, Z:%f\r\n", rtl_path.return_target.lat, rtl_path.return_target.lng, rtl_path.return_target.alt);
     // initialise yaw to point home (maybe)
     auto_yaw.set_mode_to_default(true);
 }
@@ -237,9 +239,22 @@ void ModeRTL::loiterathome_run()
         // roll, pitch from waypoint controller, yaw heading from auto_heading()
         attitude_control->input_euler_angle_roll_pitch_yaw(wp_nav->get_roll(), wp_nav->get_pitch(), auto_yaw.yaw(),true);
     }
-
+    
+    /*timesync x
     // check if we've completed this stage of RTL
     if ((millis() - _loiter_start_time) >= (uint32_t)g.rtl_loiter_time.get()) {
+        if (auto_yaw.mode() == AUTO_YAW_RESETTOARMEDYAW) {
+            // check if heading is within 2 degrees of heading when vehicle was armed
+            if (abs(wrap_180_cd(ahrs.yaw_sensor-copter.initial_armed_bearing)) <= 200) {
+                _state_complete = true;
+            }
+        } else {
+            // we have loitered long enough
+            _state_complete = true;
+        }
+    }*/
+
+    if(AP_HAL::millis64()/1000 >= start_time){
         if (auto_yaw.mode() == AUTO_YAW_RESETTOARMEDYAW) {
             // check if heading is within 2 degrees of heading when vehicle was armed
             if (abs(wrap_180_cd(ahrs.yaw_sensor-copter.initial_armed_bearing)) <= 200) {
@@ -397,7 +412,7 @@ void ModeRTL::build_path()
     pos_control->get_stopping_point_z(stopping_point);
     rtl_path.origin_point = Location(stopping_point);
     rtl_path.origin_point.change_alt_frame(Location::AltFrame::ABOVE_HOME);
-
+    
     // compute return target
     compute_return_target();
 

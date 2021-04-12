@@ -1824,7 +1824,7 @@ bool ModeAuto::verify_yaw()
 #define target_time 10
 #define margin 5
 #define hold_time 5
-uint32_t ModeAuto::last_loiter_time = 0;
+uint32_t Mode::start_time = 0;
 // verify_nav_wp - check if we have reached the next way point
 bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
@@ -1853,20 +1853,34 @@ bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
     }
     return false;*/
 
+/*ptp
     _timespec get_time;
-    AP::ptp().get_time(&get_time);
-
+    
     if(last_loiter_time==0)
     {
         last_loiter_time = AP::ptp().takeoff_time.time_sec + target_time + margin + hold_time;
-        hal.uartA->printf("last_loiter_time: %d", last_loiter_time);
+        hal.uartA->printf("last_loiter_time: %d\r\n", last_loiter_time);
     }
-    else if(get_time.time_sec >= last_loiter_time) {
-        copter.wp_nav->set_speed_xy(20.0);
+    
+    AP::ptp().get_time(&get_time);
+
+    if(get_time.time_sec >= last_loiter_time) {
         last_loiter_time += target_time + margin + hold_time;
-        hal.uartA->printf("last_loiter_time: %d", last_loiter_time);
+        hal.uartA->printf("last_loiter_time: %d\r\n", last_loiter_time);
         
         gcs().send_text(MAV_SEVERITY_INFO, "Reached command #%i",cmd.index);
+        return true;
+    }
+    return false;
+*/
+    if(start_time==0)
+    {
+        start_time = 60 + target_time + margin + hold_time;
+        hal.uartA->printf("start time: %d\r\n", start_time);
+    }
+    if((AP_HAL::millis64()/1000) >= start_time){
+        start_time += target_time + margin + hold_time;
+        hal.uartA->printf("start time: %d\r\n", start_time);
         return true;
     }
     return false;
