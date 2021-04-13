@@ -54,12 +54,9 @@ bool ModeAuto::init(bool ignore_checks)
 // auto_run - runs the auto controller
 //      should be called at 100hz or more
 //      relies on run_autopilot being called at 10hz which handles decision making and non-navigation related commands
-bool Mode::_takeoff = false;
-
+uint32_t Mode::takeoff_start_time = 60;
 void ModeAuto::run()
 {
-    if(_takeoff)
-        _mode = Auto_TakeOff;
     // call the correct auto controller
     switch (_mode) {
 
@@ -69,22 +66,18 @@ void ModeAuto::run()
             takeoff_run();
         else 
         {
-            _takeoff = true;
             _timespec get;
             AP::ptp().get_time(&get);            
             
-            if(get.time_sec >= AP::ptp().takeoff_time.time_sec && _takeoff)   
+            if(get.time_sec >= AP::ptp().takeoff_time.time_sec)   
             {
                 takeoff_run();
-                _takeoff = false;    
                 AP::ptp().takeoff_time.time_sec = 0L;
             }
         }*/
-        _takeoff = true;
-        if((millis()/1000)>=60)
+        if((millis()/1000)>=takeoff_start_time)
         {
             takeoff_run();
-            _takeoff = false;
         }   
         break;
 
@@ -1157,7 +1150,7 @@ void ModeAuto::do_nav_wp(const AP_Mission::Mission_Command& cmd)
     copter.wp_nav->set_speed_xy(target_speed);
     hal.uartA->printf("target speed: %d\r\n", target_speed);
     hal.uartA->printf("alt distance: %f\r\n", dist.length());
-
+    loiter_time_max = 1;
     // Set wp navigation target
     wp_start(target_loc);
 
@@ -1527,12 +1520,17 @@ void ModeAuto::do_payload_place(const AP_Mission::Mission_Command& cmd)
 // do_RTL - start Return-to-Launch
 void ModeAuto::do_RTL(const AP_Mission::Mission_Command& cmd)
 {
-    Location target_loc = loc_from_cmd(cmd);
-    Location current;
-    AP_Mission::Mission_Command current_cmd;
-    mission.get_next_nav_cmd(cmd.index-1, current_cmd);
-    current = loc_from_cmd(current_cmd);
-    Vector3f dist = current.get_distance_NED(target_loc);
+    
+    Location home, target;
+    AP_Mission::Mission_Command home_cmd;
+    mission.get_next_nav_cmd(0, home_cmd);
+    home = loc_from_cmd(home_cmd);
+    
+    AP_Mission::Mission_Command target_cmd;
+    mission.get_next_nav_cmd(cmd.index-1, target_cmd);
+    target = loc_from_cmd(target_cmd);
+    
+    Vector3f dist = home.get_distance_NED(target);
 
     uint16_t target_speed = (dist.length()*100)/10.0;
 
@@ -1560,15 +1558,16 @@ bool ModeAuto::verify_takeoff()
     const bool reached_wp_dest = copter.wp_nav->reached_wp_destination();
     bool takeoff_start_time = false;
     static bool flag = 0;
-    if(flag == 0)
+
+    if(flag == 0) 
     {
-        start_time += 60 + target_time + margin + hold_time;
+        finish_time = takeoff_start_time + target_time + margin + hold_time;//takeoff finish time
         flag = true;
     }
  //   hal.uartA->printf("start time: %d", start_time);
-    if((millis()/1000) >= start_time){
-        takeoff_start_time = true;
-        start_time += target_time + margin + hold_time;
+    if((millis()/1000) >= finish_time){
+        takeoff_start_time = true; 
+        finish_time += target_time + margin + hold_time; //wp2 finish time
     }
 
     // retract the landing gear
@@ -1576,7 +1575,7 @@ bool ModeAuto::verify_takeoff()
         copter.landinggear.retract_after_takeoff();
     }
     
-    return takeoff_start_time;
+    return takeoff_start_time && reached_wp_dest; //if true, go to wp2
 }
 
 // verify_land - returns true if landing has been completed
@@ -1860,7 +1859,7 @@ bool ModeAuto::verify_yaw()
 #define target_time 10
 #define margin 5
 #define hold_time 5
-uint32_t Mode::start_time;
+uint32_t Mode::finish_time = 0;
 // verify_nav_wp - check if we have reached the next way point
 bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
@@ -1909,9 +1908,9 @@ bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
     }
     return false;
 */
-    if((AP_HAL::millis64()/1000) >= start_time){
-        start_time += target_time + margin + hold_time;
-        hal.uartA->printf("start time: %d\r\n", start_time);
+    if((AP_HAL::millis64()/1000) >= finish_time){
+        finish_time += target_time + margin + hold_time; //wp3 finish time, return to home finish time
+        hal.uartA->printf("start time: %d\r\n", finish_time);
         return true;
     }
     return false;

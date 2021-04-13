@@ -70,6 +70,8 @@ void ModeRTL::run(bool disarm_on_land)
             break;
         case RTL_Land:
             // do nothing - rtl_land_run will take care of disarming motors
+            finish_time = 0;
+            takeoff_start_time = 0;
             break;
         }
     }
@@ -140,7 +142,7 @@ void ModeRTL::return_start()
         // failure must be caused by missing terrain data, restart RTL
         restart_without_terrain();
     }
-    hal.uartA->printf("return target X: %f, Y:%f, Z:%f\r\n", rtl_path.return_target.lat, rtl_path.return_target.lng, rtl_path.return_target.alt);
+    //hal.uartA->printf("return target X: %f, Y:%f, Z:%f\r\n", rtl_path.return_target.lat, rtl_path.return_target.lng, rtl_path.return_target.alt);
     // initialise yaw to point home (maybe)
     auto_yaw.set_mode_to_default(true);
 }
@@ -254,7 +256,9 @@ void ModeRTL::loiterathome_run()
         }
     }*/
 
-    if(AP_HAL::millis64()/1000 >= start_time){
+    if(AP_HAL::millis64()/1000 >= finish_time){
+        finish_time = 0;
+        takeoff_start_time=60;
         if (auto_yaw.mode() == AUTO_YAW_RESETTOARMEDYAW) {
             // check if heading is within 2 degrees of heading when vehicle was armed
             if (abs(wrap_180_cd(ahrs.yaw_sensor-copter.initial_armed_bearing)) <= 200) {

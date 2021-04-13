@@ -9,8 +9,8 @@ class GCS_Copter;
 class Mode {
 
 public:
-    static bool _takeoff;
-    static uint32_t start_time;
+    static uint32_t takeoff_start_time;
+    static uint32_t finish_time;
     // Auto Pilot Modes enumeration
     enum class Number : uint8_t {
         STABILIZE =     0,  // manual airframe angle with manual throttle
