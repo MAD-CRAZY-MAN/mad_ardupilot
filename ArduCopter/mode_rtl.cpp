@@ -96,12 +96,12 @@ void ModeRTL::run(bool disarm_on_land)
 
     case RTL_FinalDescent:
         descent_run();
-        hal.uartA->printf("desecnt\r\n");
+       // hal.uartA->printf("desecnt\r\n");
         break;
 
     case RTL_Land:
         land_run(disarm_on_land);
-        hal.uartA->printf("land\r\n");
+       // hal.uartA->printf("land\r\n");
         break;
     }
 }

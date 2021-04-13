@@ -334,12 +334,13 @@ void ModeGuided::set_angle(const Quaternion &q, float climb_rate_cms, bool use_y
 // should be called at 100hz or more
 void ModeGuided::run()
 {
-    if(_takeoff)
-        guided_mode = Guided_TakeOff;
+ //   if(_takeoff)
+ //       guided_mode = Guided_TakeOff;
     // call the correct auto controller
     switch (guided_mode) {
 
     case Guided_TakeOff:
+        /*
         if(AP::ptp().takeoff_time.time_sec == 0L)
             takeoff_run();
         else 
@@ -354,7 +355,14 @@ void ModeGuided::run()
                 _takeoff = false;    
                 AP::ptp().takeoff_time.time_sec = 0L;
             }
-        }  
+        }  */
+      //  _takeoff = true;
+      //  if((millis()/1000)>=start_time)
+      //  {
+      //      hal.uartA->printf("start takeoff: %d", start_time);
+            takeoff_run();
+      //      _takeoff = false;
+      //  }  
         break;
 
     case Guided_WP:

@@ -438,7 +438,7 @@ private:
     void do_winch(const AP_Mission::Mission_Command& cmd);
 #endif
     void do_payload_place(const AP_Mission::Mission_Command& cmd);
-    void do_RTL(void);
+    void do_RTL(const AP_Mission::Mission_Command& cmd);
 
     bool verify_takeoff();
     bool verify_land();

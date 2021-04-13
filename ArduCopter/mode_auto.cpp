@@ -81,9 +81,8 @@ void ModeAuto::run()
             }
         }*/
         _takeoff = true;
-        if((millis()/1000)>=start_time)
+        if((millis()/1000)>=60)
         {
-            hal.uartA->printf("start takeoff: %d", millis()/1000);
             takeoff_run();
             _takeoff = false;
         }   
@@ -460,7 +459,7 @@ bool ModeAuto::start_command(const AP_Mission::Mission_Command& cmd)
         break;
 
     case MAV_CMD_NAV_RETURN_TO_LAUNCH:             //20
-        do_RTL();
+        do_RTL(cmd);
         break;
 
     case MAV_CMD_NAV_SPLINE_WAYPOINT:           // 82  Navigate to Waypoint using spline
@@ -1526,8 +1525,24 @@ void ModeAuto::do_payload_place(const AP_Mission::Mission_Command& cmd)
 }
 
 // do_RTL - start Return-to-Launch
-void ModeAuto::do_RTL(void)
+void ModeAuto::do_RTL(const AP_Mission::Mission_Command& cmd)
 {
+    Location target_loc = loc_from_cmd(cmd);
+    Location current;
+    AP_Mission::Mission_Command current_cmd;
+    mission.get_next_nav_cmd(cmd.index-1, current_cmd);
+    current = loc_from_cmd(current_cmd);
+    Vector3f dist = current.get_distance_NED(target_loc);
+
+    uint16_t target_speed = (dist.length()*100)/10.0;
+
+    if(target_speed>500)
+        target_speed = 500;
+    if(target_speed<20)
+        target_speed = 20;
+    copter.wp_nav->set_speed_xy(target_speed);
+    hal.uartA->printf("target speed: %d\r\n", target_speed);
+    hal.uartA->printf("alt distance: %f\r\n", dist.length());
     // start rtl in auto flight mode
     rtl_start();
 }
@@ -1544,9 +1559,13 @@ bool ModeAuto::verify_takeoff()
     // have we reached our target altitude?
     const bool reached_wp_dest = copter.wp_nav->reached_wp_destination();
     bool takeoff_start_time = false;
-    
-    if(start_time==60)
-        start_time += target_time + margin + hold_time;
+    static bool flag = 0;
+    if(flag == 0)
+    {
+        start_time += 60 + target_time + margin + hold_time;
+        flag = true;
+    }
+ //   hal.uartA->printf("start time: %d", start_time);
     if((millis()/1000) >= start_time){
         takeoff_start_time = true;
         start_time += target_time + margin + hold_time;
@@ -1841,7 +1860,7 @@ bool ModeAuto::verify_yaw()
 #define target_time 10
 #define margin 5
 #define hold_time 5
-uint32_t Mode::start_time = 60;
+uint32_t Mode::start_time;
 // verify_nav_wp - check if we have reached the next way point
 bool ModeAuto::verify_nav_wp(const AP_Mission::Mission_Command& cmd)
 {
