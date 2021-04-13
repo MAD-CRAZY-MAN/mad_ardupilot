@@ -2665,7 +2665,7 @@ void GCS_MAVLINK::handle_timesync(const mavlink_message_t &msg)
     rsync.tc1 = timesync_receive_timestamp_ns();
     rsync.ts1 = tsync.ts1;
 
-    // respond with a timesync message
+    //respond with a timesync message
     mavlink_msg_timesync_send(
         chan,
         rsync.tc1,
