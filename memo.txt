@@ -1,0 +1,3 @@
+SRV_Channels::set_emergency_stop(true);
+libraries/AP_AHRS/AP_AHRS.cpp
+GROUPINFO
