@@ -164,7 +164,7 @@ bool MAVLink_routing::check_and_forward(mavlink_channel_t in_channel, const mavl
                              (int)target_system,
                              (int)target_component);
 #endif
-                    _mavlink_resend_uart(routes[i].channel, &msg);
+                    //_mavlink_resend_uart(routes[i].channel, &msg);
                 }
                 sent_to_chan[routes[i].channel] = true;
                 forwarded = true;
